@@ -8,3 +8,4 @@ If you will be compiling, use g++ main.cpp -lSDL2 -lSDL2Main -lSDL2_ttf --std=c+
 
 Always keep #define SDL_MAIN_HANDLED at the top and in main.cpp and always include "cobra.cpp"!
 
+Discord server: https://discord.gg/8RbdQBprg9
