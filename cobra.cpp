@@ -4,6 +4,7 @@
 #include "color.cpp"
 #include "object.cpp"
 #include "text.cpp"
+#include "physics_engine.cpp"
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
@@ -20,6 +21,7 @@ private:
   int texts_free_index = 0;
   Color bgcolor;
   double frame_start;
+  PhysicsEngine physics_engine;
 
 public:
   Object* objects[8192];
@@ -27,17 +29,15 @@ public:
   Vector2 window_size;
   const Uint8 *keyboard;
   double delta = .016;
-  double fps_limit = 60;
 
 
-  Engine(Color bg_color, Vector2 win_size, double fps_limitn = 0) {
+  Engine(Color bg_color, Vector2 win_size) {
     bgcolor = bg_color;
     window_size = win_size;
     SDL_Init(SDL_INIT_EVERYTHING);
     TTF_Init();
     window = SDL_CreateWindow("Cobra Game Engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, win_size.x, win_size.y, 0);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    fps_limit = fps_limitn;
   };
 
   void quit() {
@@ -45,6 +45,16 @@ public:
     SDL_DestroyWindow(window);
     SDL_Quit();
   }
+
+  bool detect_collision(Object obj1, Object obj2) {
+    if (obj1.centered == true && obj2.centered == true) {
+      return physics_engine.detect_collision_centered(obj1, obj2);
+    };
+    if (obj1.centered == false && obj2.centered == false) {
+      return physics_engine.detect_collision(obj1, obj2);
+    };
+    return false;
+  };
 
   int add_object(Object* obj) {
     objects[objects_free_index] = obj;
@@ -146,8 +156,5 @@ public:
       SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
     };
     SDL_RenderPresent(renderer);
-    if (delta < (1 / fps_limit)) {
-      SDL_Delay((1 / fps_limit - delta) * 1000);
-    };
   };
 };
