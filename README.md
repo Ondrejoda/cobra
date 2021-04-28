@@ -6,5 +6,5 @@ You need SDL2 and SDL2-TTF to compile.
 
 If you will be compiling, use g++ main.cpp -lSDL2 -lSDL2Main -lSDL2_ttf --std=c++11.
 
-Always keep #define SDL_MAIN_HANDLED at the top in main.cpp and always include "cobra.cpp"!
+Always keep #define SDL_MAIN_HANDLED at the top and in main.cpp and always include "cobra.cpp"!
 
