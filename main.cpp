@@ -38,11 +38,16 @@ int main(int argc, char const *argv[]) {
   Text score_text2("0", "lgc.ttf", 256, Vector2(1520, 540), Color(128, 128, 128, 255));
   cobra.add_text(&score_text2);
 
+  Particle trail(Vector2(), 30, Color(255, 255, 255, 255), Color(0, 0, 0, 0), 1);
+
   while (true) {
     cobra.start_frame();
     if (cobra.handle_all()) {
       break;
     };
+    trail.position = ball.position;
+    parts.push_back(trail.clone());
+    cobra.add_particle(&parts.back());
     if (cobra.detect_collision(&ball, &top_boundary)) {
       ball.velocity.y = -ball.velocity.y;
       cobra.play_sfx(bump);
