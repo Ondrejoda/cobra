@@ -8,21 +8,15 @@ int main(int argc, char const *argv[]) {
 
   SFX bump("test.wav");
 
-  Object paddle(cobra.renderer, Vector2(50, 340), Vector2(50, 400), "", Color(255, 255, 255, 255));
+  Object paddle(Vector2(50, 340), Vector2(50, 400), "", Color(255, 255, 255, 255));
   paddle.damping = .997;
   cobra.add_object(&paddle);
 
-  Object paddle2(cobra.renderer, Vector2(1820, 340), Vector2(50, 400), "", Color(255, 255, 255, 255));
+  Object paddle2(Vector2(1820, 340), Vector2(50, 400), "", Color(255, 255, 255, 255));
   paddle2.damping = .997;
   cobra.add_object(&paddle2);
 
-  Object top_boundary(cobra.renderer, Vector2(0, -50), Vector2(1920, 50), "", Color(255, 255, 255, 255));
-  cobra.add_object(&top_boundary);
-
-  Object bottom_boundary(cobra.renderer, Vector2(0, 1080), Vector2(1920, 50), "", Color(255, 255, 255, 255));
-  cobra.add_object(&bottom_boundary);
-
-  Object ball(cobra.renderer, Vector2(960, 540), Vector2(30, 30), "", Color(255, 255, 255, 255));
+  Object ball(Vector2(960, 540), Vector2(30, 30), "", Color(255, 255, 255, 255));
   ball.apply_impulse(500, 500);
   ball.damping = 1.00001;
   cobra.add_object(&ball);
@@ -30,10 +24,10 @@ int main(int argc, char const *argv[]) {
   int score = 0;
   int score2 = 0;
 
-  Text score_text("0", "lgc.ttf", 256, Vector2(400, 540), Color(128, 128, 128, 255));
+  Text score_text("0", "lgc.ttf", 256, Vector2(400, 540), Color(128, 128, 128, 255), -1);
   cobra.add_text(&score_text);
 
-  Text score_text2("0", "lgc.ttf", 256, Vector2(1520, 540), Color(128, 128, 128, 255));
+  Text score_text2("0", "lgc.ttf", 256, Vector2(1520, 540), Color(128, 128, 128, 255), -1);
   cobra.add_text(&score_text2);
 
   Particle trail(Vector2(), 30, Color(255, 255, 255, 255), Color(0, 0, 0, 0), .3);
@@ -48,11 +42,11 @@ int main(int argc, char const *argv[]) {
     };
     trail.position = ball.position + Vector2(16, 16);
     cobra.add_particle(trail);
-    if (cobra.detect_collision(&ball, &top_boundary)) {
+    if (ball.position.y <= 0) {
       ball.velocity.y = -ball.velocity.y;
       cobra.play_sfx(bump);
     };
-    if (cobra.detect_collision(&ball, &bottom_boundary)) {
+    if (ball.position.y + ball.size.y >= 1080) {
       ball.velocity.y = -ball.velocity.y;
       cobra.play_sfx(bump);
     };

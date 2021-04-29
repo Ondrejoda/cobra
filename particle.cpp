@@ -20,10 +20,11 @@ public:
   Color end_color;
   double lifespan;
   double life;
+  int z_index = 0;
 
   Particle() {};
 
-  Particle(Vector2 nposition, double nsize, Color nstart_color, Color nend_color, double nlifespan) {
+  Particle(Vector2 nposition, double nsize, Color nstart_color, Color nend_color, double nlifespan, int z_indexn = 0) {
     position = nposition;
     size = nsize;
     start_color = nstart_color;
@@ -31,6 +32,7 @@ public:
     size = nsize;
     lifespan = nlifespan;
     life = nlifespan;
+    z_index = z_indexn;
   };
 
   Particle(const Particle& particle) {
@@ -43,6 +45,7 @@ public:
     life = particle.lifespan;
     velocity = particle.velocity;
     damping = particle.damping;
+    z_index = particle.z_index;
   }
 
   void apply_impulse(double x, double y) {
@@ -66,7 +69,7 @@ public:
   };
 
   Particle clone() {
-    Particle clone(position, size, start_color, end_color, lifespan);
+    Particle clone(position, size, start_color, end_color, lifespan, z_index);
     clone.velocity = velocity;
     clone.damping = damping;
     return clone;

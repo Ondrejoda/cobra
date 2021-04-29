@@ -17,6 +17,10 @@
 
 #include "SDL.h"
 
+double lerp(double num, double target, double divider) {
+  return (num * divider) + (target * (1 - divider));
+};
+
 double clamp(double num, double min, double max) {
   if (num < min) {
     num = min;
@@ -100,6 +104,9 @@ public:
   };
 
   void add_object(Object* obj) {
+    if (obj->texture_dir != "") {
+      obj->setup_texture(renderer);
+    };
     objects.push_back(obj);
   };
 
@@ -169,73 +176,116 @@ public:
   void render() {
     SDL_SetRenderDrawColor(renderer, bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a);
     SDL_RenderClear(renderer);
-    for (size_t index = 0; index < particles.size(); index++) {
-      Particle* curr_part = particles[index];
-      SDL_SetRenderDrawColor(renderer, curr_part->color.r, curr_part->color.g, curr_part->color.b, curr_part->color.a);
-      SDL_Rect rect;
-      rect.x = curr_part->position.x - (curr_part->size / 2);
-      rect.y = curr_part->position.y - (curr_part->size / 2);
-      rect.w = curr_part->size;
-      rect.h = curr_part->size;
-      SDL_RenderFillRect(renderer, &rect);
-    };
-    for (size_t index = 0; index < objects.size(); index++) {
-      Object* curr_obj = objects[index];
-      if (curr_obj->texture_dir != "") {
-        SDL_Rect objRect;
-
-        if (curr_obj->centered) {
-          objRect.x = curr_obj->position.x - curr_obj->surface->w / 2;
-          objRect.y = curr_obj->position.y - curr_obj->surface->h / 2;
-        } else {
-          objRect.x = curr_obj->position.x;
-          objRect.y = curr_obj->position.y;
-        };
-        objRect.w = curr_obj->surface->w;
-        objRect.h = curr_obj->surface->h;
-
-        SDL_RenderCopy(renderer, curr_obj->texture, NULL, &objRect);
-      } else {
-        SDL_SetRenderDrawColor(renderer, curr_obj->color.r, curr_obj->color.g, curr_obj->color.b, curr_obj->color.a);
-        SDL_Rect rect;
-        if (curr_obj->centered) {
-          rect.x = curr_obj->position.x - (curr_obj->size.x / 2);
-          rect.y = curr_obj->position.y - (curr_obj->size.y / 2);
-        } else {
-          rect.x = curr_obj->position.x;
-          rect.y = curr_obj->position.y;
-        };
-        rect.w = curr_obj->size.x;
-        rect.h = curr_obj->size.y;
-        if (curr_obj->fill) {
-          SDL_RenderFillRect(renderer, &rect);
-        } else {
-          SDL_RenderDrawRect(renderer, &rect);
-        };
+    int z_min = 0;
+    int z_max = 0;
+    for (size_t i = 0; i < particles.size(); i++) {
+      if (particles[i]->z_index < z_min) {
+        z_min = particles[i]->z_index;
+      };
+      if (particles[i]->z_index > z_max) {
+        z_max = particles[i]->z_index;
       };
     };
-    for (size_t index = 0; index < texts.size(); index++) {
-      Text* curr_text = texts[index];
-      SDL_Color textColor = { (Uint8) curr_text->color.r, (Uint8) curr_text->color.g, (Uint8) curr_text->color.b, (Uint8) curr_text->color.a };
-      SDL_Surface* textSurface = TTF_RenderText_Solid(curr_text->font, curr_text->text.c_str(), textColor);
-      SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-
-      SDL_Rect textRect;
-
-      if (curr_text->centered) {
-        textRect.x = curr_text->position.x - textSurface->w / 2;
-        textRect.y = curr_text->position.y - textSurface->h / 2;
-      } else {
-        textRect.x = curr_text->position.x;
-        textRect.y = curr_text->position.y;
+    for (size_t i = 0; i < objects.size(); i++) {
+      if (objects[i]->z_index < z_min) {
+        z_min = objects[i]->z_index;
       };
-      textRect.w = textSurface->w;
-      textRect.h = textSurface->h;
-      SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
-      SDL_FreeSurface(textSurface);
-      SDL_DestroyTexture(textTexture);
+      if (objects[i]->z_index > z_max) {
+        z_max = objects[i]->z_index;
+      };
+    };
+    for (size_t i = 0; i < texts.size(); i++) {
+      if (texts[i]->z_index < z_min) {
+        z_min = texts[i]->z_index;
+      };
+      if (texts[i]->z_index > z_max) {
+        z_max = texts[i]->z_index;
+      };
+    };
+    for (size_t z_index = 0; z_index < (1 + z_max + -z_min); z_index++) {
+      for (size_t index = 0; index < particles.size(); index++) {
+        if (particles[index]->z_index == z_index + z_min) {
+          render_particle(particles[index]);
+        };
+      };
+      for (size_t index = 0; index < objects.size(); index++) {
+        if (objects[index]->z_index == z_index + z_min) {
+          render_object(objects[index]);
+        };
+      };
+      for (size_t index = 0; index < texts.size(); index++) {
+        if (texts[index]->z_index == z_index + z_min) {
+          render_text(texts[index]);
+        };
+      };
     };
     SDL_RenderPresent(renderer);
+  };
+
+  void render_particle(Particle* curr_part) {
+    SDL_SetRenderDrawColor(renderer, curr_part->color.r, curr_part->color.g, curr_part->color.b, curr_part->color.a);
+    SDL_Rect rect;
+    rect.x = curr_part->position.x - (curr_part->size / 2);
+    rect.y = curr_part->position.y - (curr_part->size / 2);
+    rect.w = curr_part->size;
+    rect.h = curr_part->size;
+    SDL_RenderFillRect(renderer, &rect);
+  }
+
+  void render_object(Object* curr_obj) {
+    if (curr_obj->texture_dir != "") {
+      SDL_Rect objRect;
+
+      if (curr_obj->centered) {
+        objRect.x = curr_obj->position.x - curr_obj->surface->w / 2;
+        objRect.y = curr_obj->position.y - curr_obj->surface->h / 2;
+      } else {
+        objRect.x = curr_obj->position.x;
+        objRect.y = curr_obj->position.y;
+      };
+      objRect.w = curr_obj->surface->w;
+      objRect.h = curr_obj->surface->h;
+
+      SDL_RenderCopy(renderer, curr_obj->texture, NULL, &objRect);
+    } else {
+      SDL_SetRenderDrawColor(renderer, curr_obj->color.r, curr_obj->color.g, curr_obj->color.b, curr_obj->color.a);
+      SDL_Rect rect;
+      if (curr_obj->centered) {
+        rect.x = curr_obj->position.x - (curr_obj->size.x / 2);
+        rect.y = curr_obj->position.y - (curr_obj->size.y / 2);
+      } else {
+        rect.x = curr_obj->position.x;
+        rect.y = curr_obj->position.y;
+      };
+      rect.w = curr_obj->size.x;
+      rect.h = curr_obj->size.y;
+      if (curr_obj->fill) {
+        SDL_RenderFillRect(renderer, &rect);
+      } else {
+        SDL_RenderDrawRect(renderer, &rect);
+      };
+    };
+  };
+
+  void render_text(Text* curr_text) {
+    SDL_Color textColor = { (Uint8) curr_text->color.r, (Uint8) curr_text->color.g, (Uint8) curr_text->color.b, (Uint8) curr_text->color.a };
+    SDL_Surface* textSurface = TTF_RenderText_Solid(curr_text->font, curr_text->text.c_str(), textColor);
+    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+
+    SDL_Rect textRect;
+
+    if (curr_text->centered) {
+      textRect.x = curr_text->position.x - textSurface->w / 2;
+      textRect.y = curr_text->position.y - textSurface->h / 2;
+    } else {
+      textRect.x = curr_text->position.x;
+      textRect.y = curr_text->position.y;
+    };
+    textRect.w = textSurface->w;
+    textRect.h = textSurface->h;
+    SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+    SDL_FreeSurface(textSurface);
+    SDL_DestroyTexture(textTexture);
   };
 
   void play_sfx(SFX sfx) {

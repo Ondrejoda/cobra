@@ -21,26 +21,28 @@ public:
   bool fill;
   SDL_Surface* surface;
   SDL_Texture* texture;
-  SDL_Renderer* renderer;
   std::string texture_dir;
+  int z_index = 0;
 
   Object() {};
 
-  Object(SDL_Renderer* renderern, Vector2 nposition, Vector2 nsize, std::string texture_dirn, Color ncolor, bool centeredn = false, bool filln = true) {
+  Object(Vector2 nposition, Vector2 nsize, std::string texture_dirn, Color ncolor, int z_indexn = 0, bool centeredn = false, bool filln = true) {
     position = nposition;
     size = nsize;
     color = ncolor;
     fill = filln;
     centered = centeredn;
     texture_dir = texture_dirn;
-    renderer = renderern;
-    if (texture_dirn != "") {
-      surface = IMG_Load(texture_dir.c_str());
-      texture = SDL_CreateTextureFromSurface(renderer, surface);
-      size = Vector2(surface->w, surface->h);
-    } else {
+    z_index = z_indexn;
+    if (texture_dirn == "") {
       size = nsize;
     };
+  };
+
+  void setup_texture(SDL_Renderer* renderer) {
+    surface = IMG_Load(texture_dir.c_str());
+    texture = SDL_CreateTextureFromSurface(renderer, surface);
+    size = Vector2(surface->w, surface->h);
   };
 
   void apply_impulse(double x, double y) {
@@ -63,7 +65,7 @@ public:
   };
 
   Object clone() {
-    Object clone(renderer, position, size, texture_dir, color, centered, fill);
+    Object clone(position, size, texture_dir, color, z_index, centered, fill);
     clone.velocity = velocity;
     clone.damping = damping;
     return clone;
