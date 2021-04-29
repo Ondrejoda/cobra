@@ -103,6 +103,10 @@ public:
     objects.push_back(obj);
   };
 
+  void add_particle(Particle part) {
+    particles.push_back(new Particle(part));
+  };
+
   void add_particle(Particle* part) {
     particles.push_back(part);
   };
@@ -139,6 +143,7 @@ public:
       curr_part->update(delta);
       if (curr_part->life <= 0) {
         particles.erase(particles.begin() +index);
+        delete curr_part;
       };
     };
   };
@@ -164,6 +169,16 @@ public:
   void render() {
     SDL_SetRenderDrawColor(renderer, bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a);
     SDL_RenderClear(renderer);
+    for (size_t index = 0; index < particles.size(); index++) {
+      Particle* curr_part = particles[index];
+      SDL_SetRenderDrawColor(renderer, curr_part->color.r, curr_part->color.g, curr_part->color.b, curr_part->color.a);
+      SDL_Rect rect;
+      rect.x = curr_part->position.x - (curr_part->size / 2);
+      rect.y = curr_part->position.y - (curr_part->size / 2);
+      rect.w = curr_part->size;
+      rect.h = curr_part->size;
+      SDL_RenderFillRect(renderer, &rect);
+    };
     for (size_t index = 0; index < objects.size(); index++) {
       Object* curr_obj = objects[index];
       if (curr_obj->texture_dir != "") {
@@ -198,16 +213,6 @@ public:
           SDL_RenderDrawRect(renderer, &rect);
         };
       };
-    };
-    for (size_t index = 0; index < particles.size(); index++) {
-      Particle* curr_part = particles[index];
-      SDL_SetRenderDrawColor(renderer, curr_part->color.r, curr_part->color.g, curr_part->color.b, curr_part->color.a);
-      SDL_Rect rect;
-      rect.x = curr_part->position.x - (curr_part->size / 2);
-      rect.y = curr_part->position.y - (curr_part->size / 2);
-      rect.w = curr_part->size;
-      rect.h = curr_part->size;
-      SDL_RenderFillRect(renderer, &rect);
     };
     for (size_t index = 0; index < texts.size(); index++) {
       Text* curr_text = texts[index];

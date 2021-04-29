@@ -33,6 +33,18 @@ public:
     life = nlifespan;
   };
 
+  Particle(const Particle& particle) {
+    position = particle.position;
+    size = particle.size;
+    start_color = particle.start_color;
+    end_color = particle.end_color;
+    size = particle.size;
+    lifespan = particle.lifespan;
+    life = particle.lifespan;
+    velocity = particle.velocity;
+    damping = particle.damping;
+  }
+
   void apply_impulse(double x, double y) {
     velocity.x += x;
     velocity.y += y;

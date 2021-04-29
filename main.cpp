@@ -3,8 +3,6 @@
 #include "cobra.cpp"
 
 int main(int argc, char const *argv[]) {
-  std::vector<Particle> parts;
-
   Engine cobra(Color(0, 0, 0, 255), Vector2(1920, 1080));
   cobra.set_fullscreen(true);
 
@@ -38,16 +36,18 @@ int main(int argc, char const *argv[]) {
   Text score_text2("0", "lgc.ttf", 256, Vector2(1520, 540), Color(128, 128, 128, 255));
   cobra.add_text(&score_text2);
 
-  Particle trail(Vector2(), 30, Color(255, 255, 255, 255), Color(0, 0, 0, 0), 1);
+  Particle trail(Vector2(), 30, Color(255, 255, 255, 255), Color(0, 0, 0, 0), .3);
+
+  int tick = 0;
 
   while (true) {
+    tick += 1;
     cobra.start_frame();
     if (cobra.handle_all()) {
       break;
     };
-    trail.position = ball.position;
-    parts.push_back(trail.clone());
-    cobra.add_particle(&parts.back());
+    trail.position = ball.position + Vector2(16, 16);
+    cobra.add_particle(trail);
     if (cobra.detect_collision(&ball, &top_boundary)) {
       ball.velocity.y = -ball.velocity.y;
       cobra.play_sfx(bump);
