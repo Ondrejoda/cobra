@@ -7,6 +7,7 @@
 #include "text.cpp"
 #include "sound_sfx.cpp"
 #include "physics_engine.cpp"
+#include "camera.cpp"
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
@@ -16,6 +17,10 @@
 #include <SDL2/SDL_mixer.h>
 
 #include "SDL.h"
+
+int random_int(int min, int max) {
+  return min + (rand() % (max - min + 1));
+};
 
 double lerp(double num, double target, double divider) {
   return (num * divider) + (target * (1 - divider));
@@ -40,13 +45,13 @@ public:
   double frame_start;
   PhysicsEngine physics_engine;
   SDL_Renderer* renderer;
+  Camera camera;
   std::vector<Object*> objects;
   std::vector<Particle*> particles;
   std::vector<Text*> texts;
   Vector2 window_size;
   const Uint8 *keyboard;
   double delta = .016;
-
 
   Engine(Color bg_color, Vector2 win_size) {
     bgcolor = bg_color;
@@ -59,6 +64,10 @@ public:
     window = SDL_CreateWindow("Cobra Game Engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, win_size.x, win_size.y, 0);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+  };
+
+  void set_camera(Camera new_cam) {
+    camera = new_cam;
   };
 
   void quit() {
@@ -225,8 +234,8 @@ public:
   void render_particle(Particle* curr_part) {
     SDL_SetRenderDrawColor(renderer, curr_part->color.r, curr_part->color.g, curr_part->color.b, curr_part->color.a);
     SDL_Rect rect;
-    rect.x = curr_part->position.x - (curr_part->size / 2);
-    rect.y = curr_part->position.y - (curr_part->size / 2);
+    rect.x = curr_part->position.x - (curr_part->size / 2) - camera.position.x;
+    rect.y = curr_part->position.y - (curr_part->size / 2) - camera.position.y;
     rect.w = curr_part->size;
     rect.h = curr_part->size;
     SDL_RenderFillRect(renderer, &rect);
@@ -237,11 +246,11 @@ public:
       SDL_Rect objRect;
 
       if (curr_obj->centered) {
-        objRect.x = curr_obj->position.x - curr_obj->surface->w / 2;
-        objRect.y = curr_obj->position.y - curr_obj->surface->h / 2;
+        objRect.x = curr_obj->position.x - curr_obj->surface->w / 2 - camera.position.x;
+        objRect.y = curr_obj->position.y - curr_obj->surface->h / 2 - camera.position.y;
       } else {
-        objRect.x = curr_obj->position.x;
-        objRect.y = curr_obj->position.y;
+        objRect.x = curr_obj->position.x - camera.position.x;
+        objRect.y = curr_obj->position.y - camera.position.y;
       };
       objRect.w = curr_obj->surface->w;
       objRect.h = curr_obj->surface->h;
@@ -251,11 +260,11 @@ public:
       SDL_SetRenderDrawColor(renderer, curr_obj->color.r, curr_obj->color.g, curr_obj->color.b, curr_obj->color.a);
       SDL_Rect rect;
       if (curr_obj->centered) {
-        rect.x = curr_obj->position.x - (curr_obj->size.x / 2);
-        rect.y = curr_obj->position.y - (curr_obj->size.y / 2);
+        rect.x = curr_obj->position.x - (curr_obj->size.x / 2) - camera.position.x;
+        rect.y = curr_obj->position.y - (curr_obj->size.y / 2) - camera.position.y;
       } else {
-        rect.x = curr_obj->position.x;
-        rect.y = curr_obj->position.y;
+        rect.x = curr_obj->position.x - camera.position.x;
+        rect.y = curr_obj->position.y - camera.position.y;
       };
       rect.w = curr_obj->size.x;
       rect.h = curr_obj->size.y;
@@ -275,11 +284,11 @@ public:
     SDL_Rect textRect;
 
     if (curr_text->centered) {
-      textRect.x = curr_text->position.x - textSurface->w / 2;
-      textRect.y = curr_text->position.y - textSurface->h / 2;
+      textRect.x = curr_text->position.x - textSurface->w / 2 - camera.position.x;
+      textRect.y = curr_text->position.y - textSurface->h / 2 - camera.position.y;
     } else {
-      textRect.x = curr_text->position.x;
-      textRect.y = curr_text->position.y;
+      textRect.x = curr_text->position.x - camera.position.x;
+      textRect.y = curr_text->position.y - camera.position.y;
     };
     textRect.w = textSurface->w;
     textRect.h = textSurface->h;

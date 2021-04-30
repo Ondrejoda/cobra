@@ -30,7 +30,7 @@ int main(int argc, char const *argv[]) {
   Text score_text2("0", "lgc.ttf", 256, Vector2(1520, 540), Color(128, 128, 128, 255), -1);
   cobra.add_text(&score_text2);
 
-  Particle trail(Vector2(), 30, Color(255, 255, 255, 255), Color(0, 0, 0, 0), .3);
+  Particle trail(Vector2(), 30, Color(255, 255, 255, 128), Color(0, 0, 0, 0), .3);
 
   int tick = 0;
 
