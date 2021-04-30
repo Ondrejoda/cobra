@@ -2,6 +2,35 @@
 
 #include "cobra.cpp"
 
+const int WIDTH = 1920;
+const int HEIGHT = 1080;
+
+class IntroScene: public Scene {
+public:
+  Engine* cobra;
+  Text title;
+  Text sub;
+
+  void ready(Engine* engine) {
+    cobra = engine;
+
+    title = Text("PonG", "lgc.ttf", 256, Vector2(WIDTH / 2, 0), Color(255), -1);
+    add_text(&title);
+
+    sub = Text("Press ENTER to continue", "lgc.ttf", 64, Vector2(WIDTH / 2, HEIGHT), Color(128), -1);
+    add_text(&sub);
+  };
+
+  void main() {
+    title.position.y = lerp(title.position.y, 400, .01);
+    sub.position.y = lerp(sub.position.y, 600, .01);
+    if (cobra->keyboard[SDL_SCANCODE_RETURN]) {
+      running = false;
+    };
+  };
+};
+
+
 class GameScene: public Scene {
 public:
   Engine* cobra;
@@ -11,6 +40,7 @@ public:
   Object ball;
   int score;
   int score2;
+  int tick;
   Text score_text;
   Text score_text2;
   Particle trail;
@@ -20,15 +50,15 @@ public:
 
     bump = SFX("test.wav");
 
-    paddle = Object(Vector2(50, 340), Vector2(50, 400), "", Color(255, 255, 255, 255));
+    paddle = Object(Vector2(50, 340), Vector2(50, 400), "", Color(255));
     paddle.damping = .997;
     add_object(&paddle);
 
-    paddle2 = Object(Vector2(1820, 340), Vector2(50, 400), "", Color(255, 255, 255, 255));
+    paddle2 = Object(Vector2(1820, 340), Vector2(50, 400), "", Color(255));
     paddle2.damping = .997;
     add_object(&paddle2);
 
-    ball = Object(Vector2(960, 540), Vector2(30, 30), "", Color(255, 255, 255, 255));
+    ball = Object(Vector2(960, 540), Vector2(30, 30), "", Color(255));
     ball.apply_impulse(500, 500);
     ball.damping = 1.00001;
     add_object(&ball);
@@ -36,18 +66,22 @@ public:
     score = 0;
     score2 = 0;
 
-    score_text = Text("0", "lgc.ttf", 256, Vector2(400, 540), Color(128, 128, 128, 255), -1);
+    score_text = Text("0", "lgc.ttf", 256, Vector2(400, 540), Color(128), -1);
     add_text(&score_text);
 
-    score_text2 = Text("0", "lgc.ttf", 256, Vector2(1520, 540), Color(128, 128, 128, 255), -1);
+    score_text2 = Text("0", "lgc.ttf", 256, Vector2(1520, 540), Color(128), -1);
     add_text(&score_text2);
 
-    trail = Particle(Vector2(), 30, Color(255, 255, 255, 128), Color(0, 0, 0, 0), .3);
+    trail = Particle(Vector2(), 30, Color(255, 128), Color(0, 0), .3);
+    tick = 0;
   };
 
   void main() {
+    tick += 1;
     trail.position = ball.position + Vector2(16, 16);
-    add_particle(trail);
+    if (tick % 3 == 0) {
+      add_particle(trail);
+    }
     if (ball.position.y <= 0) {
       ball.velocity.y = -ball.velocity.y;
       cobra->play_sfx(bump);
@@ -99,14 +133,27 @@ public:
 };
 
 int main(int argc, char const *argv[]) {
-  Engine cobra(Color(0, 0, 0, 255), Vector2(1920, 1080));
+  Engine cobra(Color(0), Vector2(WIDTH, HEIGHT));
   cobra.set_fullscreen(true);
+
+  IntroScene is;
+  is.ready(&cobra);
+  cobra.set_scene(&is);
+
+  while (is.running) {
+    cobra.start_frame();
+    if (cobra.handle_all()) {
+      break;
+    };
+    is.main();
+    cobra.end_frame();
+  };
 
   GameScene gs;
   gs.ready(&cobra);
   cobra.set_scene(&gs);
 
-  while (true) {
+  while (gs.running) {
     cobra.start_frame();
     if (cobra.handle_all()) {
       break;

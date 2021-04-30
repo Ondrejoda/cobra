@@ -28,4 +28,25 @@ public:
     b = nb;
     a = na;
   };
+
+  Color(double nr, double ng, double nb) {
+    r = nr;
+    g = ng;
+    b = nb;
+    a = 255;
+  };
+
+  Color(double all, double na) {
+    r = all;
+    g = all;
+    b = all;
+    a = na;
+  };
+
+  Color(double all) {
+    r = all;
+    g = all;
+    b = all;
+    a = 255;
+  };
 };

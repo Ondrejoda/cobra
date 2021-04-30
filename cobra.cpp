@@ -24,7 +24,7 @@ int random_int(int min, int max) {
 };
 
 double lerp(double num, double target, double divider) {
-  return (num * divider) + (target * (1 - divider));
+  return num * (1 - divider) + target * divider;
 };
 
 double clamp(double num, double min, double max) {
@@ -85,12 +85,7 @@ public:
   };
 
   void set_fullscreen(bool mode) {
-    if (mode) {
-      SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-    } else {
-      SDL_SetWindowFullscreen(window, 0);
-    };
-
+    SDL_SetWindowFullscreen(window, mode);
   };
 
   void set_scene(Scene* new_scene) {
