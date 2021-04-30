@@ -104,9 +104,7 @@ int main(int argc, char const *argv[]) {
 
   GameScene gs();
   gs.ready(&cobra);
-  cobra.set_particles(gs.particles);
-  cobra.set_objects(gs.objects);
-  cobra.set_texts(gs.texts);
+  cobra.set_scene(gs);
 
   while (true) {
     cobra.start_frame();

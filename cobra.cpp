@@ -47,9 +47,7 @@ public:
   PhysicsEngine physics_engine;
   SDL_Renderer* renderer;
   Camera camera;
-  std::vector<Object*> objects;
-  std::vector<Particle*> particles;
-  std::vector<Text*> texts;
+  Scene* scene;
   Vector2 window_size;
   const Uint8 *keyboard;
   double delta = .016;
@@ -95,6 +93,10 @@ public:
 
   };
 
+  void set_scene(Scene* new_scene) {
+    scene = new_scene;
+  };
+
   bool detect_collision(Object* obj1, Object* obj2) {
     if (obj1->centered == true && obj2->centered == true) {
       return physics_engine.detect_collision_centered(obj1, obj2);
@@ -113,49 +115,6 @@ public:
       return physics_engine.detect_collision(&obj1, &obj2);
     };
     return false;
-  };
-
-  void set_objects(std::vector<Object*> objs) {
-    for (size_t i = 0; i < objs.size(); i++) {
-      objects.push_back(objs[i]);
-    };
-  };
-
-  void set_particles(std::vector<Object*> parts) {
-    for (size_t i = 0; i < parts.size(); i++) {
-      particles.push_back(parts[i]);
-    };
-  };
-
-  void set_texts(std::vector<Object*> txts) {
-    for (size_t i = 0; i < txts.size(); i++) {
-      texts.push_back(txts[i]);
-    };
-  };
-
-  void reset_scene() {
-    particles.clear();
-    objects.clear();
-    texts.clear();
-  };
-
-  void add_object(Object* obj) {
-    if (obj->texture_dir != "") {
-      obj->setup_texture(renderer);
-    };
-    objects.push_back(obj);
-  };
-
-  void add_particle(Particle part) {
-    particles.push_back(new Particle(part));
-  };
-
-  void add_particle(Particle* part) {
-    particles.push_back(part);
-  };
-
-  void add_text(Text* text) {
-    texts.push_back(text);
   };
 
   double time() {
@@ -177,15 +136,15 @@ public:
   };
 
   void handle_physics() {
-    for (size_t index = 0; index < objects.size(); index++) {
-      Object* curr_obj = objects[index];
+    for (size_t index = 0; index < scene->objects.size(); index++) {
+      Object* curr_obj = scene->objects[index];
       curr_obj->update_velocity(delta);
     };
-    for (size_t index = 0; index < particles.size(); index++) {
-      Particle* curr_part = particles[index];
+    for (size_t index = 0; index < scene->particles.size(); index++) {
+      Particle* curr_part = scene->particles[index];
       curr_part->update(delta);
       if (curr_part->life <= 0) {
-        particles.erase(particles.begin() +index);
+        scene->particles.erase(scene->particles.begin() +index);
         delete curr_part;
       };
     };
@@ -214,44 +173,44 @@ public:
     SDL_RenderClear(renderer);
     int z_min = 0;
     int z_max = 0;
-    for (size_t i = 0; i < particles.size(); i++) {
-      if (particles[i]->z_index < z_min) {
-        z_min = particles[i]->z_index;
+    for (size_t i = 0; i < scene->particles.size(); i++) {
+      if (scene->particles[i]->z_index < z_min) {
+        z_min = scene->particles[i]->z_index;
       };
-      if (particles[i]->z_index > z_max) {
-        z_max = particles[i]->z_index;
-      };
-    };
-    for (size_t i = 0; i < objects.size(); i++) {
-      if (objects[i]->z_index < z_min) {
-        z_min = objects[i]->z_index;
-      };
-      if (objects[i]->z_index > z_max) {
-        z_max = objects[i]->z_index;
+      if (scene->particles[i]->z_index > z_max) {
+        z_max = scene->particles[i]->z_index;
       };
     };
-    for (size_t i = 0; i < texts.size(); i++) {
-      if (texts[i]->z_index < z_min) {
-        z_min = texts[i]->z_index;
+    for (size_t i = 0; i < scene->objects.size(); i++) {
+      if (scene->objects[i]->z_index < z_min) {
+        z_min = scene->objects[i]->z_index;
       };
-      if (texts[i]->z_index > z_max) {
-        z_max = texts[i]->z_index;
+      if (scene->objects[i]->z_index > z_max) {
+        z_max = scene->objects[i]->z_index;
+      };
+    };
+    for (size_t i = 0; i < scene->texts.size(); i++) {
+      if (scene->texts[i]->z_index < z_min) {
+        z_min = scene->texts[i]->z_index;
+      };
+      if (scene->texts[i]->z_index > z_max) {
+        z_max = scene->texts[i]->z_index;
       };
     };
     for (size_t z_index = 0; z_index < (1 + z_max + -z_min); z_index++) {
-      for (size_t index = 0; index < particles.size(); index++) {
-        if (particles[index]->z_index == z_index + z_min) {
-          render_particle(particles[index]);
+      for (size_t index = 0; index < scene->particles.size(); index++) {
+        if (scene->particles[index]->z_index == z_index + z_min) {
+          render_particle(scene->particles[index]);
         };
       };
-      for (size_t index = 0; index < objects.size(); index++) {
-        if (objects[index]->z_index == z_index + z_min) {
-          render_object(objects[index]);
+      for (size_t index = 0; index < scene->objects.size(); index++) {
+        if (scene->objects[index]->z_index == z_index + z_min) {
+          render_object(scene->objects[index]);
         };
       };
-      for (size_t index = 0; index < texts.size(); index++) {
-        if (texts[index]->z_index == z_index + z_min) {
-          render_text(texts[index]);
+      for (size_t index = 0; index < scene->texts.size(); index++) {
+        if (scene->texts[index]->z_index == z_index + z_min) {
+          render_text(scene->texts[index]);
         };
       };
     };
