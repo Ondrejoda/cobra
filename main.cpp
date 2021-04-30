@@ -47,7 +47,7 @@ public:
 
   void main() {
     trail.position = ball.position + Vector2(16, 16);
-    cobra->add_particle(trail);
+    add_particle(trail);
     if (ball.position.y <= 0) {
       ball.velocity.y = -ball.velocity.y;
       cobra->play_sfx(bump);
@@ -102,9 +102,9 @@ int main(int argc, char const *argv[]) {
   Engine cobra(Color(0, 0, 0, 255), Vector2(1920, 1080));
   cobra.set_fullscreen(true);
 
-  GameScene gs();
+  GameScene gs;
   gs.ready(&cobra);
-  cobra.set_scene(gs);
+  cobra.set_scene(&gs);
 
   while (true) {
     cobra.start_frame();
