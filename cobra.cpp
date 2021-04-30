@@ -8,6 +8,7 @@
 #include "sound_sfx.cpp"
 #include "physics_engine.cpp"
 #include "camera.cpp"
+#include "scene.cpp"
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
@@ -52,6 +53,8 @@ public:
   Vector2 window_size;
   const Uint8 *keyboard;
   double delta = .016;
+
+  Engine() {};
 
   Engine(Color bg_color, Vector2 win_size) {
     bgcolor = bg_color;
@@ -110,6 +113,30 @@ public:
       return physics_engine.detect_collision(&obj1, &obj2);
     };
     return false;
+  };
+
+  void set_objects(std::vector<Object*> objs) {
+    for (size_t i = 0; i < objs.size(); i++) {
+      objects.push_back(objs[i]);
+    };
+  };
+
+  void set_particles(std::vector<Object*> parts) {
+    for (size_t i = 0; i < parts.size(); i++) {
+      particles.push_back(parts[i]);
+    };
+  };
+
+  void set_texts(std::vector<Object*> txts) {
+    for (size_t i = 0; i < txts.size(); i++) {
+      texts.push_back(txts[i]);
+    };
+  };
+
+  void reset_scene() {
+    particles.clear();
+    objects.clear();
+    texts.clear();
   };
 
   void add_object(Object* obj) {
