@@ -23,6 +23,7 @@ public:
   SDL_Texture* texture;
   std::string texture_dir;
   int z_index = 0;
+  bool texture_setup = false;
 
   Object() {};
 
@@ -36,6 +37,7 @@ public:
     z_index = z_indexn;
     if (texture_dirn == "") {
       size = nsize;
+      texture_setup = true;
     };
   };
 
@@ -43,6 +45,7 @@ public:
     surface = IMG_Load(texture_dir.c_str());
     texture = SDL_CreateTextureFromSurface(renderer, surface);
     size = Vector2(surface->w, surface->h);
+    texture_setup = true;
   };
 
   void apply_impulse(double x, double y) {

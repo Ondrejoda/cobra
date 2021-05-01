@@ -5,7 +5,7 @@
 #include <functional>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_mixer.h>
-#include "SDL.h"
+#include <SDL2/SDL.h>
 
 class Vector2 {
 

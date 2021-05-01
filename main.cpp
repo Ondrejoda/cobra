@@ -7,24 +7,23 @@ const int HEIGHT = 720;
 
 class IntroScene: public Scene {
 public:
-  Engine* cobra;
   Text title;
   Text sub;
 
-  void ready(Engine* engine) {
-    cobra = engine;
+  IntroScene() {
+    Cobra::set_scene(this);
 
-    title = Text("CPong", "lgc.ttf", 256, Vector2(WIDTH / 2, 0), Color(255), -1);
+    title = Text("CPong", "lgc.ttf", 128, Vector2(WIDTH / 2, 0), Color(255), -1);
     add_text(&title);
 
-    sub = Text("Press ENTER to continue", "lgc.ttf", 64, Vector2(WIDTH / 2, HEIGHT), Color(128), -1);
+    sub = Text("W, S or Up, Down to control | Press ENTER to continue", "lgc.ttf", 32, Vector2(WIDTH / 2, HEIGHT), Color(128), -1);
     add_text(&sub);
   };
 
   void main() {
     title.position.y = lerp(title.position.y, HEIGHT / 2, .01);
     sub.position.y = lerp(sub.position.y, 600, .01);
-    if (cobra->keyboard[SDL_SCANCODE_RETURN]) {
+    if (Cobra::keyboard[SDL_SCANCODE_RETURN]) {
       running = false;
     };
   };
@@ -32,8 +31,6 @@ public:
 
 class GameScene: public Scene {
 public:
-  Engine* cobra;
-  SFX bump;
   Object paddle;
   Object paddle2;
   Object ball;
@@ -44,16 +41,14 @@ public:
   Text score_text2;
   Particle trail;
 
-  void ready(Engine* engine) {
-    cobra = engine;
+  GameScene() {
+    Cobra::set_scene(this);
 
-    bump = SFX("test.wav");
-
-    paddle = Object(Vector2(50, (HEIGHT + 300) / 2), Vector2(50, 300), "", Color(255));
+    paddle = Object(Vector2(25, (HEIGHT + 300) / 2), Vector2(50, 300), "", Color(255));
     paddle.damping = .997;
     add_object(&paddle);
 
-    paddle2 = Object(Vector2(WIDTH - 50, (HEIGHT + 300) / 2), Vector2(50, 300), "", Color(255));
+    paddle2 = Object(Vector2(WIDTH - 75, (HEIGHT + 300) / 2), Vector2(50, 300), "", Color(255));
     paddle2.damping = .997;
     add_object(&paddle2);
 
@@ -72,6 +67,7 @@ public:
     add_text(&score_text2);
 
     trail = Particle(Vector2(), 30, Color(255, 128), Color(0, 0), .3);
+
     tick = 0;
   };
 
@@ -83,40 +79,30 @@ public:
     if (tick % 3 == 0) {
       add_particle(trail);
     }
-    if (ball.position.y <= 0) {
+    if (ball.position.y <= 0 || ball.position.y + ball.size.y >= HEIGHT) {
       ball.velocity.y = -ball.velocity.y;
-      cobra->play_sfx(bump);
     };
-    if (ball.position.y + ball.size.y >= HEIGHT) {
-      ball.velocity.y = -ball.velocity.y;
-      cobra->play_sfx(bump);
-    };
-    if (cobra->detect_collision(&ball, &paddle)) {
+    if (Cobra::detect_collision(&ball, &paddle) || Cobra::detect_collision(&ball, &paddle2)) {
       ball.velocity.x = -ball.velocity.x;
-      cobra->play_sfx(bump);
-    };
-    if (cobra->detect_collision(&ball, &paddle2)) {
-      ball.velocity.x = -ball.velocity.x;
-      cobra->play_sfx(bump);
     };
     if (ball.position.x < -32) {
-      ball.position = Vector2(960, 540);
+      ball.position = Vector2(WIDTH / 2, HEIGHT / 2);
       score2++;
     };
     if (ball.position.x > WIDTH + 2) {
-      ball.position = Vector2(960, 540);
+      ball.position = Vector2(WIDTH / 2, HEIGHT / 2);
       score++;
     };
-    if (cobra->keyboard[SDL_SCANCODE_W]) {
+    if (Cobra::keyboard[SDL_SCANCODE_W]) {
       paddle.apply_impulse(0, -5);
     };
-    if (cobra->keyboard[SDL_SCANCODE_S]) {
+    if (Cobra::keyboard[SDL_SCANCODE_S]) {
       paddle.apply_impulse(0, 5);
     };
-    if (cobra->keyboard[SDL_SCANCODE_UP]) {
+    if (Cobra::keyboard[SDL_SCANCODE_UP]) {
       paddle2.apply_impulse(0, -5);
     };
-    if (cobra->keyboard[SDL_SCANCODE_DOWN]) {
+    if (Cobra::keyboard[SDL_SCANCODE_DOWN]) {
       paddle2.apply_impulse(0, 5);
     };
     if (paddle.position.y != clamp(paddle.position.y, 0, HEIGHT - paddle.size.y)) {
@@ -129,37 +115,34 @@ public:
     };
     score_text.text = std::to_string(score);
     score_text2.text = std::to_string(score2);
-    ball.position.y = clamp(ball.position.y, 0, 1050);
+    ball.position.y = clamp(ball.position.y, 0, HEIGHT - 30);
   };
 };
 
 int main(int argc, char const *argv[]) {
-  Engine cobra(Color(0), Vector2(WIDTH, HEIGHT));
+  Cobra::init(Color(0), Vector2(WIDTH, HEIGHT));
 
   IntroScene is;
-  is.ready(&cobra);
-  cobra.set_scene(&is);
 
   while (is.running) {
-    cobra.start_frame();
-    if (cobra.handle_all()) {
-      break;
+    Cobra::start_frame();
+    if (Cobra::handle_all()) {
+      is.running = false;
     };
     is.main();
-    cobra.end_frame();
+    Cobra::end_frame();
   };
 
   GameScene gs;
-  gs.ready(&cobra);
-  cobra.set_scene(&gs);
 
   while (gs.running) {
-    cobra.start_frame();
-    if (cobra.handle_all()) {
+    Cobra::start_frame();
+    if (Cobra::handle_all()) {
       gs.running = false;
     };
     gs.main();
-    cobra.end_frame();
+    Cobra::end_frame();
   };
+
   return 0;
 };

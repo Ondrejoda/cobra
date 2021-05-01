@@ -37,8 +37,7 @@ double clamp(double num, double min, double max) {
   return num;
 };
 
-class Engine {
-public:
+namespace Cobra {
   SDL_Window* window;
   int objects_free_index = 0;
   int texts_free_index = 0;
@@ -52,9 +51,7 @@ public:
   const Uint8 *keyboard;
   double delta = .016;
 
-  Engine() {};
-
-  Engine(Color bg_color, Vector2 win_size) {
+  void init(Color bg_color, Vector2 win_size) {
     bgcolor = bg_color;
     window_size = win_size;
     SDL_Init(SDL_INIT_EVERYTHING);
@@ -156,62 +153,6 @@ public:
     return false;
   };
 
-  bool handle_all() {
-    render();
-    handle_physics();
-    handle_keyboard();
-    return handle_exit();
-  }
-
-  void render() {
-    SDL_SetRenderDrawColor(renderer, bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a);
-    SDL_RenderClear(renderer);
-    int z_min = 0;
-    int z_max = 0;
-    for (size_t i = 0; i < scene->particles.size(); i++) {
-      if (scene->particles[i]->z_index < z_min) {
-        z_min = scene->particles[i]->z_index;
-      };
-      if (scene->particles[i]->z_index > z_max) {
-        z_max = scene->particles[i]->z_index;
-      };
-    };
-    for (size_t i = 0; i < scene->objects.size(); i++) {
-      if (scene->objects[i]->z_index < z_min) {
-        z_min = scene->objects[i]->z_index;
-      };
-      if (scene->objects[i]->z_index > z_max) {
-        z_max = scene->objects[i]->z_index;
-      };
-    };
-    for (size_t i = 0; i < scene->texts.size(); i++) {
-      if (scene->texts[i]->z_index < z_min) {
-        z_min = scene->texts[i]->z_index;
-      };
-      if (scene->texts[i]->z_index > z_max) {
-        z_max = scene->texts[i]->z_index;
-      };
-    };
-    for (size_t z_index = 0; z_index < (1 + z_max + -z_min); z_index++) {
-      for (size_t index = 0; index < scene->particles.size(); index++) {
-        if (scene->particles[index]->z_index == z_index + z_min) {
-          render_particle(scene->particles[index]);
-        };
-      };
-      for (size_t index = 0; index < scene->objects.size(); index++) {
-        if (scene->objects[index]->z_index == z_index + z_min) {
-          render_object(scene->objects[index]);
-        };
-      };
-      for (size_t index = 0; index < scene->texts.size(); index++) {
-        if (scene->texts[index]->z_index == z_index + z_min) {
-          render_text(scene->texts[index]);
-        };
-      };
-    };
-    SDL_RenderPresent(renderer);
-  };
-
   void render_particle(Particle* curr_part) {
     SDL_SetRenderDrawColor(renderer, curr_part->color.r, curr_part->color.g, curr_part->color.b, curr_part->color.a);
     SDL_Rect rect;
@@ -224,6 +165,9 @@ public:
 
   void render_object(Object* curr_obj) {
     if (curr_obj->texture_dir != "") {
+      if (!curr_obj->texture_setup) {
+        curr_obj->setup_texture(renderer);
+      };
       SDL_Rect objRect;
 
       if (curr_obj->centered) {
@@ -278,9 +222,65 @@ public:
     SDL_DestroyTexture(textTexture);
   };
 
+  void render() {
+      SDL_SetRenderDrawColor(renderer, bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a);
+      SDL_RenderClear(renderer);
+      int z_min = 0;
+      int z_max = 0;
+      for (size_t i = 0; i < scene->particles.size(); i++) {
+        if (scene->particles[i]->z_index < z_min) {
+          z_min = scene->particles[i]->z_index;
+        };
+        if (scene->particles[i]->z_index > z_max) {
+          z_max = scene->particles[i]->z_index;
+        };
+      };
+      for (size_t i = 0; i < scene->objects.size(); i++) {
+        if (scene->objects[i]->z_index < z_min) {
+          z_min = scene->objects[i]->z_index;
+        };
+        if (scene->objects[i]->z_index > z_max) {
+          z_max = scene->objects[i]->z_index;
+        };
+      };
+      for (size_t i = 0; i < scene->texts.size(); i++) {
+        if (scene->texts[i]->z_index < z_min) {
+          z_min = scene->texts[i]->z_index;
+        };
+        if (scene->texts[i]->z_index > z_max) {
+          z_max = scene->texts[i]->z_index;
+        };
+      };
+      for (size_t z_index = 0; z_index < (1 + z_max + -z_min); z_index++) {
+        for (size_t index = 0; index < scene->particles.size(); index++) {
+          if (scene->particles[index]->z_index == z_index + z_min) {
+            Cobra::render_particle(scene->particles[index]);
+          };
+        };
+        for (size_t index = 0; index < scene->objects.size(); index++) {
+          if (scene->objects[index]->z_index == z_index + z_min) {
+            Cobra::render_object(scene->objects[index]);
+          };
+        };
+        for (size_t index = 0; index < scene->texts.size(); index++) {
+          if (scene->texts[index]->z_index == z_index + z_min) {
+            Cobra::render_text(scene->texts[index]);
+          };
+        };
+      };
+      SDL_RenderPresent(renderer);
+    };
+
   void play_sfx(SFX sfx) {
     if (Mix_PlayingMusic() == 0) {
       Mix_PlayChannel( -1, sfx.sfx, 0 );
     };
   };
+
+  bool handle_all() {
+    Cobra::render();
+    Cobra::handle_physics();
+    Cobra::handle_keyboard();
+    return Cobra::handle_exit();
+  }
 };
