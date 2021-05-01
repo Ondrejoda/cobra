@@ -14,6 +14,7 @@
 #include <iostream>
 #include <functional>
 #include <vector>
+#include <cmath>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_mixer.h>
 
@@ -37,6 +38,14 @@ double clamp(double num, double min, double max) {
   return num;
 };
 
+double d2r(double degree) {
+  return degree / 57.2958;
+}
+
+double r2d(double radian) {
+  return radian * 57.2958;
+}
+
 namespace Cobra {
   SDL_Window* window;
   int objects_free_index = 0;
@@ -49,7 +58,12 @@ namespace Cobra {
   Scene* scene;
   Vector2 window_size;
   const Uint8 *keyboard;
+  Vector2 mouse_position;
   double delta = .016;
+  bool running = true;
+
+// here's the function that im trying to set
+  auto main_func() {};
 
   void init(Color bg_color, Vector2 win_size) {
     bgcolor = bg_color;
@@ -85,8 +99,18 @@ namespace Cobra {
     SDL_SetWindowFullscreen(window, mode);
   };
 
-  void set_scene(Scene* new_scene) {
-    scene = new_scene;
+  void set_scene(auto* new_scene) {
+    if (running) {scene = new_scene;};
+  };
+
+
+// here i set it
+  template <typename T>
+  void set_scene(auto* new_scene, T main_funcn) {
+    if (running) {
+      scene = new_scene;
+      main_func = main_funcn;
+    };
   };
 
   bool detect_collision(Object* obj1, Object* obj2) {
@@ -127,6 +151,21 @@ namespace Cobra {
       keyboard = keyboard_tmp;
   };
 
+  bool handle_events() {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+      if (event.type == SDL_MOUSEMOTION) {
+        mouse_position.x = event.motion.x;
+        mouse_position.y = event.motion.y;
+      };
+      if (event.type == SDL_QUIT) {
+        quit();
+        return true;
+      };
+    };
+    return false;
+  };
+
   void handle_physics() {
     for (size_t index = 0; index < scene->objects.size(); index++) {
       Object* curr_obj = scene->objects[index];
@@ -140,17 +179,6 @@ namespace Cobra {
         delete curr_part;
       };
     };
-  };
-
-  bool handle_exit() {
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-      if (event.type == SDL_QUIT) {
-        quit();
-        return true;
-      };
-    };
-    return false;
   };
 
   void render_particle(Particle* curr_part) {
@@ -171,8 +199,8 @@ namespace Cobra {
       SDL_Rect objRect;
 
       if (curr_obj->centered) {
-        objRect.x = curr_obj->position.x - curr_obj->surface->w / 2 - camera.position.x;
-        objRect.y = curr_obj->position.y - curr_obj->surface->h / 2 - camera.position.y;
+        objRect.x = curr_obj->position.x - curr_obj->size.x / 2 - camera.position.x;
+        objRect.y = curr_obj->position.y - curr_obj->size.y / 2 - camera.position.y;
       } else {
         objRect.x = curr_obj->position.x - camera.position.x;
         objRect.y = curr_obj->position.y - camera.position.y;
@@ -277,10 +305,13 @@ namespace Cobra {
     };
   };
 
-  bool handle_all() {
+  void handle_all() {
+    Cobra::main_func();
     Cobra::render();
     Cobra::handle_physics();
     Cobra::handle_keyboard();
-    return Cobra::handle_exit();
-  }
+    bool game_running = !Cobra::handle_events();
+    Cobra::scene->running = game_running;
+    Cobra::running = game_running;
+  };
 };

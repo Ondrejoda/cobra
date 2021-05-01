@@ -68,11 +68,4 @@ public:
     color.a = (start_color.a * divider) + (end_color.a * (1 - divider));
   };
 
-  Particle clone() {
-    Particle clone(position, size, start_color, end_color, lifespan, z_index);
-    clone.velocity = velocity;
-    clone.damping = damping;
-    return clone;
-  };
-
 };

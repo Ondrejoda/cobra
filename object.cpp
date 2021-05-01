@@ -41,6 +41,22 @@ public:
     };
   };
 
+  Object(const Object& obj) {
+    position = obj.position;
+    size = obj.size;
+    color = obj.color;
+    fill = obj.fill;
+    centered = obj.centered;
+    texture_dir = obj.texture_dir;
+    z_index = obj.z_index;
+    mass = obj.mass;
+    velocity = obj.velocity;
+    damping = obj.damping;
+    surface = obj.surface;
+    texture = obj.texture;
+    texture_setup = obj.texture_setup;
+  }
+
   void setup_texture(SDL_Renderer* renderer) {
     surface = IMG_Load(texture_dir.c_str());
     texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -65,13 +81,6 @@ public:
   void update_velocity(double delta) {
     position += velocity * delta;
     velocity *= damping;
-  };
-
-  Object clone() {
-    Object clone(position, size, texture_dir, color, z_index, centered, fill);
-    clone.velocity = velocity;
-    clone.damping = damping;
-    return clone;
   };
 
 };

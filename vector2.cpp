@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+#include <cmath>
 #include <functional>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_mixer.h>
@@ -103,7 +104,13 @@ public:
     return !(x == other.x && y == other.y);
   };
 
+  void rotate(double rotation){
+  	double x_1 = x;
+  	x = (x * cos(rotation)) - (y * sin(rotation));
+  	y = (x_1 * sin(rotation)) + (y * cos(rotation));
+  };
+
   std::string str() {
-    return std::to_string((int) x) + ", " + std::to_string(y);
-  }
+    return std::to_string((int) x) + ", " + std::to_string((int) y);
+  };
 };

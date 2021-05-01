@@ -16,9 +16,12 @@ public:
   std::vector<Particle*> particles;
   std::vector<Text*> texts;
 
-
   void add_object(Object* obj) {
     objects.push_back(obj);
+  };
+
+  void add_object(Object obj) {
+    objects.push_back(new Object(obj));
   };
 
   void add_particle(Particle part) {
@@ -33,7 +36,7 @@ public:
     texts.push_back(text);
   };
 
-  void ready() {};
 
+// here's the main() definition
   void main() {};
 };
