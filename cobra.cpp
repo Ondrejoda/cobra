@@ -56,14 +56,12 @@ namespace Cobra {
   SDL_Renderer* renderer;
   Camera camera;
   Scene* scene;
+  Scene* to_set_scene;
   Vector2 window_size;
   const Uint8 *keyboard;
   Vector2 mouse_position;
   double delta = .016;
   bool running = true;
-
-// here's the function that im trying to set
-  auto main_func() {};
 
   void init(Color bg_color, Vector2 win_size) {
     bgcolor = bg_color;
@@ -99,18 +97,8 @@ namespace Cobra {
     SDL_SetWindowFullscreen(window, mode);
   };
 
-  void set_scene(auto* new_scene) {
-    if (running) {scene = new_scene;};
-  };
-
-
-// here i set it
-  template <typename T>
-  void set_scene(auto* new_scene, T main_funcn) {
-    if (running) {
-      scene = new_scene;
-      main_func = main_funcn;
-    };
+  void set_scene(Scene* new_scene) {
+    if (running) {to_set_scene = new_scene;};
   };
 
   bool detect_collision(Object* obj1, Object* obj2) {
@@ -306,12 +294,32 @@ namespace Cobra {
   };
 
   void handle_all() {
-    Cobra::main_func();
+    Cobra::start_frame();
+    Cobra::handle_keyboard();
     Cobra::render();
     Cobra::handle_physics();
-    Cobra::handle_keyboard();
+    Cobra::handle_events();
     bool game_running = !Cobra::handle_events();
     Cobra::scene->running = game_running;
     Cobra::running = game_running;
+    Cobra::scene->main();
+    Cobra::end_frame();
+  };
+
+  void mainloop() {
+    Cobra::scene = Cobra::to_set_scene;
+    while (running) {
+      while (Cobra::scene->running) {
+        handle_all();
+      };
+      if (Cobra::scene != Cobra::to_set_scene) {
+        Cobra::scene = Cobra::to_set_scene;
+        std::cout << "changed" << '\n';
+      } else {
+        quit();
+        running = false;
+      };
+    };
+    std::cout << "fin" << '\n';
   };
 };

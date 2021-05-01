@@ -5,28 +5,6 @@
 const int WIDTH = 1280;
 const int HEIGHT = 720;
 
-class IntroScene: public Scene {
-public:
-  Text title;
-  Text sub;
-
-  IntroScene() {
-    Cobra::set_scene(this);
-
-    title = Text("CPong", "lgc.ttf", 128, Vector2(WIDTH / 2, 0), Color(255), -1);
-    add_text(&title);
-
-    sub = Text("W, S or Up, Down to control | Press ENTER to continue", "lgc.ttf", 32, Vector2(WIDTH / 2, HEIGHT), Color(128), -1);
-    add_text(&sub);
-  };
-
-  void main() {
-    title.position.y = lerp(title.position.y, HEIGHT / 2, .01);
-    sub.position.y = lerp(sub.position.y, 600, .01);
-    if (Cobra::keyboard[SDL_SCANCODE_RETURN]) {running = false;};
-  };
-};
-
 class GameScene: public Scene {
 public:
   Object paddle;
@@ -40,7 +18,6 @@ public:
   Particle trail;
 
   GameScene() {
-    Cobra::set_scene(this);
 
     paddle = Object(Vector2(25, (HEIGHT + 300) / 2), Vector2(50, 300), "", Color(255));
     paddle.damping = .997;
@@ -62,9 +39,12 @@ public:
     add_text(&score_text2);
 
     trail = Particle(Vector2(), 30, Color(255, 128), Color(0, 0), .3);
+
+    Cobra::set_scene(this);
   };
 
   void main() {
+    std::cout << "main" << '\n';
     tick += 1;
     score_text.position.x = lerp(score_text.position.x, 300, .01);
     score_text2.position.x = lerp(score_text2.position.x, WIDTH - 300, .01);
@@ -112,26 +92,36 @@ public:
   };
 };
 
+class IntroScene: public Scene {
+public:
+  Text title;
+  Text sub;
+
+  IntroScene() {
+    Cobra::set_scene(this);
+
+    title = Text("CPong", "lgc.ttf", 128, Vector2(WIDTH / 2, 0), Color(255), -1);
+    add_text(&title);
+
+    sub = Text("W, S or Up, Down to control | Press ENTER to continue", "lgc.ttf", 32, Vector2(WIDTH / 2, HEIGHT), Color(128), -1);
+    add_text(&sub);
+  };
+
+  void main() {
+    title.position.y = lerp(title.position.y, HEIGHT / 2, .01);
+    sub.position.y = lerp(sub.position.y, 600, .01);
+    if (Cobra::keyboard[SDL_SCANCODE_RETURN]) {
+      running = false;
+      GameScene gs;
+    };
+  };
+};
+
 int main(int argc, char const *argv[]) {
   Cobra::init(Color(0), Vector2(WIDTH, HEIGHT));
 
   IntroScene is;
-
-  while (is.running) {
-    Cobra::start_frame();
-    Cobra::handle_all();
-    is.main();
-    Cobra::end_frame();
-  };
-
-  GameScene gs;
-
-  while (gs.running) {
-    Cobra::start_frame();
-    Cobra::handle_all();
-    gs.main();
-    Cobra::end_frame();
-  };
+  Cobra::mainloop();
 
   return 0;
 };

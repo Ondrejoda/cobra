@@ -11,7 +11,11 @@ public:
 
   MainScene() {
     // here i call the set_scene
-    Cobra::set_scene(this, this->main());
+    Cobra::set_scene(this);
+  };
+
+  void main() {
+    std::cout << "test" << '\n';
   };
 };
 
@@ -21,9 +25,7 @@ int main(int argc, char const *argv[]) {
   MainScene ms;
 
   while (ms.running) {
-    Cobra::start_frame();
     Cobra::handle_all();
-    Cobra::end_frame();
   };
 
   return 0;

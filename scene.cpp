@@ -36,7 +36,5 @@ public:
     texts.push_back(text);
   };
 
-
-// here's the main() definition
-  void main() {};
+  virtual void main() {};
 };
